@@ -26,16 +26,17 @@ public static class RetryAnalyzer
 
         foreach (var attempt in attempts)
         {
-            if (attempt.Outcome == "Skip")
+            // Attempt skipped, doesnt count in attempt budget
+            if (attempt.Outcome.Equals("Skip", StringComparison.OrdinalIgnoreCase))
                 continue;
-            if (counted >= limit)
+            // Validates if theres any retries left on the attempt budget if true breaks the cycle
+            if (counted >= limit+1)
                 break;
-
-            counted++;
-            if (attempt.Outcome == "Pass")
+            counted++; //count up
+            //if the attempt its successful asks if the counter its 1, if true the veredict its passed if not its flaky
+            if (attempt.Outcome.Equals("Pass", StringComparison.OrdinalIgnoreCase))
                 return counted == 1 ? Verdict.Passed : Verdict.Flaky;
         }
-
         return counted == 0 ? Verdict.NotRun : Verdict.Failed;
     }
 }
